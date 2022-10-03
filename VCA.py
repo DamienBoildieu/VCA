@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
+
+import numpy as np
 import scipy as sp
 import scipy.linalg as splin
 
@@ -99,21 +101,21 @@ def vca(Y,R,verbose = True,snr_input = 0):
     if verbose:
       print("... Select proj. to R-1")
                 
-      d = R-1
-      if snr_input==0: # it means that the projection is already computed
-        Ud = Ud[:,:d]
-      else:
-        y_m = sp.mean(Y,axis=1,keepdims=True)
-        Y_o = Y - y_m  # data with zero-mean 
-         
-        Ud  = splin.svd(sp.dot(Y_o,Y_o.T)/float(N))[0][:,:d]  # computes the p-projection matrix 
-        x_p =  sp.dot(Ud.T,Y_o)                 # project thezeros mean data onto p-subspace
-                
-      Yp =  sp.dot(Ud,x_p[:d,:]) + y_m      # again in dimension L
-                
-      x = x_p[:d,:] #  x_p =  Ud.T * Y_o is on a R-dim subspace
-      c = sp.amax(sp.sum(x**2,axis=0))**0.5
-      y = sp.vstack(( x, c*sp.ones((1,N)) ))
+    d = R-1
+    if snr_input==0: # it means that the projection is already computed
+      Ud = Ud[:,:d]
+    else:
+      y_m = sp.mean(Y,axis=1,keepdims=True)
+      Y_o = Y - y_m  # data with zero-mean
+
+      Ud  = splin.svd(sp.dot(Y_o,Y_o.T)/float(N))[0][:,:d]  # computes the p-projection matrix
+      x_p =  sp.dot(Ud.T,Y_o)                 # project thezeros mean data onto p-subspace
+
+    Yp =  sp.dot(Ud,x_p[:d,:]) + y_m      # again in dimension L
+
+    x = x_p[:d,:] #  x_p =  Ud.T * Y_o is on a R-dim subspace
+    c = sp.amax(sp.sum(x**2,axis=0))**0.5
+    y = sp.vstack(( x, c*sp.ones((1,N)) ))
   else:
     if verbose:
       print("... Select the projective proj.")
@@ -132,13 +134,12 @@ def vca(Y,R,verbose = True,snr_input = 0):
   #############################################
   # VCA algorithm
   #############################################
-
   indice = sp.zeros((R),dtype=int)
   A = sp.zeros((R,R))
   A[-1,0] = 1
 
   for i in range(R):
-    w = sp.random.rand(R,1);   
+    w = np.random.rand(R,1);
     f = w - sp.dot(A,sp.dot(splin.pinv(A),w))
     f = f / splin.norm(f)
       
